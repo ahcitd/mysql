@@ -1,0 +1,220 @@
+# ==========================================
+# MySQL Configuration File with utf8mb4
+# ==========================================
+
+# ==========================================
+# [client] - การตั้งค่าสำหรับ client ทั้งหมด
+# ==========================================
+[client]
+# กำหนด character set เริ่มต้นสำหรับ client เป็น utf8mb4 (รองรับ emoji และตัวอักษรทุกภาษา)
+default-character-set = utf8mb4
+
+# ==========================================
+# [mysql] - การตั้งค่าเฉพาะสำหรับ mysql command-line client
+# ==========================================
+[mysql]
+# กำหนด character set เริ่มต้นสำหรับ mysql CLI เป็น utf8mb4
+default-character-set = utf8mb4
+
+# ==========================================
+# [mysqld] - การตั้งค่าหลักของ MySQL Server
+# ==========================================
+[mysqld]
+
+# ------------------------------------------
+# Character Set Configuration (การตั้งค่า encoding)
+# ------------------------------------------
+# กำหนด character set เริ่มต้นของ server เป็น utf8mb4 (รองรับตัวอักษร 4 bytes รวม emoji)
+character-set-server = utf8mb4
+
+# กำหนด collation (กฎการเปรียบเทียบและเรียงลำดับ) เป็น utf8mb4_general_ci
+# general_ci = case-insensitive, เร็วกว่า unicode_ci เล็กน้อย เหมาะกับภาษาอังกฤษและภาษาไทย
+collation-server = utf8mb4_general_ci
+
+# บังคับให้ทุก connection ที่เชื่อมต่อเข้ามาใช้ utf8mb4 กับ general_ci ทันที
+init-connect = 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci'
+
+# ไม่ให้ client เปลี่ยน character set ที่ส่งมา (บังคับให้ใช้ตามที่ server กำหนด)
+skip-character-set-client-handshake
+
+# ------------------------------------------
+# Connection Settings (การตั้งค่าการเชื่อมต่อ)
+# ------------------------------------------
+# จำนวน connection สูงสุดที่อนุญาตให้เชื่อมต่อพร้อมกันได้ (200 connections)
+max_connections = 200
+
+# ขนาดสูงสุดของแพ็คเกจที่สามารถส่งผ่านได้ในครั้งเดียว (256MB)
+# เหมาะสำหรับการ import ข้อมูลขนาดใหญ่หรือ BLOB/TEXT ขนาดใหญ่
+max_allowed_packet = 256M
+
+# ระยะเวลารอสูงสุดในการเชื่อมต่อ (10 วินาที)
+connect_timeout = 10
+
+# ระยะเวลาที่ server จะรอก่อนปิด connection ที่ไม่ได้ใช้งาน (600 วินาที = 10 นาที)
+wait_timeout = 600
+
+# ระยะเวลาที่ server จะรอก่อนปิด interactive connection (600 วินาที = 10 นาที)
+interactive_timeout = 600
+
+# ------------------------------------------
+# Authentication (การตั้งค่าการยืนยันตัวตน)
+# ------------------------------------------
+# ใช้ mysql_native_password แทน caching_sha2_password สำหรับความเข้ากันได้กับ client เก่า
+default_authentication_plugin = mysql_native_password
+
+# ------------------------------------------
+# Buffer Pool Settings (การตั้งค่า memory cache สำหรับ InnoDB)
+# ------------------------------------------
+# ขนาดของ buffer pool สำหรับเก็บข้อมูลและ index ใน memory (1GB)
+# ควรตั้งค่าประมาณ 50-70% ของ RAM ที่มี สำหรับ dedicated database server
+innodb_buffer_pool_size = 1G
+
+# จำนวน instance ของ buffer pool (แบ่งเป็น 1 ส่วน)
+# แนะนำใช้ 1 instance ต่อ 1GB ของ buffer pool size
+innodb_buffer_pool_instances = 1
+
+# ขนาดของไฟล์ log สำหรับ transaction (256MB)
+# ไฟล์ใหญ่ขึ้น = เขียนช้าลง แต่ recovery เร็วขึ้น
+innodb_log_file_size = 256M
+
+# ขนาดของ buffer สำหรับเก็บ log ก่อนเขียนลง disk (16MB)
+innodb_log_buffer_size = 16M
+
+# กำหนดว่าจะ flush log ลง disk เมื่อใด
+# 2 = เขียนทุก transaction แต่ flush ลง disk ทุกวินาที (เร็ว แต่อาจเสียข้อมูลได้ 1 วินาที)
+# 1 = เขียนและ flush ทุก transaction (ช้า แต่ปลอดภัยที่สุด)
+innodb_flush_log_at_trx_commit = 2
+
+# วิธีการเขียนข้อมูลลง disk
+# O_DIRECT = ข้ามระบบ cache ของ OS เพื่อหลีกเลี่ยง double buffering (Linux only)
+innodb_flush_method = O_DIRECT
+
+# ------------------------------------------
+# Table Cache (แคชตาราง)
+# ------------------------------------------
+# จำนวนตารางสูงสุดที่สามารถเปิดไว้พร้อมกันได้ (4000 ตาราง)
+table_open_cache = 4000
+
+# จำนวน table definition สูงสุดที่เก็บไว้ใน cache (2000 ตาราง)
+table_definition_cache = 2000
+
+# ------------------------------------------
+# Temp Tables (ตารางชั่วคราว)
+# ------------------------------------------
+# ขนาดสูงสุดของตารางชั่วคราวใน memory ก่อนเขียนลง disk (64MB)
+tmp_table_size = 64M
+
+# ขนาดสูงสุดของตาราง MEMORY/HEAP (64MB)
+max_heap_table_size = 64M
+
+# ------------------------------------------
+# Sort & Group (การเรียงลำดับและจัดกลุ่ม)
+# ------------------------------------------
+# ขนาด buffer สำหรับการ sort (2MB ต่อ thread)
+sort_buffer_size = 2M
+
+# ขนาด buffer สำหรับการอ่านข้อมูลแบบ sequential (2MB)
+read_buffer_size = 2M
+
+# ขนาด buffer สำหรับการอ่านข้อมูลแบบ random (4MB)
+read_rnd_buffer_size = 4M
+
+# ขนาด buffer สำหรับการ JOIN ตาราง (2MB ต่อ join)
+join_buffer_size = 2M
+
+# ------------------------------------------
+# Thread Settings (การตั้งค่า threads)
+# ------------------------------------------
+# จำนวน thread ที่เก็บไว้ใน cache เมื่อไม่ได้ใช้งาน (50 threads)
+# ช่วยลดเวลาในการสร้าง thread ใหม่
+thread_cache_size = 50
+
+# ขนาด stack สำหรับแต่ละ thread (256KB)
+thread_stack = 256K
+
+# ------------------------------------------
+# Logging (การบันทึก log)
+# ------------------------------------------
+# ไฟล์สำหรับเก็บ error log
+log_error = /var/log/mysql/error.log
+
+# เปิดการบันทึก slow query (query ที่ทำงานช้า)
+slow_query_log = 1
+
+# ไฟล์สำหรับเก็บ slow query log
+slow_query_log_file = /var/log/mysql/slow-query.log
+
+# กำหนดว่า query ที่ใช้เวลานานกว่ากี่วินาทีจึงจะถือว่า "ช้า" (2 วินาที)
+long_query_time = 5
+
+# ไม่บันทึก query ที่ไม่ใช้ index (0 = ปิด)
+# ถ้าเปิดจะเห็น query ที่ควรสร้าง index
+log_queries_not_using_indexes = 0
+
+# ------------------------------------------
+# InnoDB Settings (การตั้งค่า InnoDB storage engine)
+# ------------------------------------------
+# แยกเก็บแต่ละตารางเป็นไฟล์ .ibd ของตัวเอง (แนะนำให้เปิด)
+innodb_file_per_table = 1
+
+# จำนวนไฟล์ .ibd ที่สามารถเปิดพร้อมกันได้ (400 ไฟล์)
+innodb_open_files = 400
+
+# ความสามารถในการเขียน I/O ปกติ (400 IOPS)
+# ปรับตามประสิทธิภาพ disk (SSD ควรสูงกว่า HDD)
+innodb_io_capacity = 400
+
+# ความสามารถในการเขียน I/O สูงสุด (2000 IOPS)
+innodb_io_capacity_max = 2000
+
+# ------------------------------------------
+# Performance Schema (เครื่องมือวิเคราะห์ประสิทธิภาพ)
+# ------------------------------------------
+# เปิดใช้งาน performance schema สำหรับการ monitor และ debug
+performance_schema = ON
+
+# ------------------------------------------
+# Default Storage Engine (storage engine เริ่มต้น)
+# ------------------------------------------
+# กำหนดให้ใช้ InnoDB เป็น storage engine เริ่มต้น (รองรับ transaction, foreign key)
+default_storage_engine = InnoDB
+
+# ------------------------------------------
+# SQL Mode (โหมดการทำงานของ SQL)
+# ------------------------------------------
+# ONLY_FULL_GROUP_BY = บังคับให้ใช้ GROUP BY ถูกต้อง
+# STRICT_TRANS_TABLES = ใช้โหมดเข้มงวด ไม่ยอมให้ใส่ค่าที่ไม่ถูกต้อง
+# NO_ZERO_IN_DATE = ไม่ยอมให้วันที่มี 0 เช่น 2024-00-01
+# NO_ZERO_DATE = ไม่ยอมให้วันที่เป็น 0000-00-00
+# ERROR_FOR_DIVISION_BY_ZERO = แสดง error เมื่อหารด้วย 0
+# NO_ENGINE_SUBSTITUTION = ไม่ให้แทนที่ storage engine อัตโนมัติ
+sql_mode = ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+
+# ------------------------------------------
+# MySQL 8.0 Specific Settings
+# ------------------------------------------
+# ปิด mysqlx (MySQL Document Store) ถ้าไม่ได้ใช้
+mysqlx = 0
+
+# ขนาด buffer สำหรับ transaction history (ช่วยให้ MVCC ทำงานได้ดีขึ้น)
+innodb_undo_log_truncate = ON
+innodb_max_undo_log_size = 1G
+
+# การตั้งค่า redo log
+innodb_redo_log_capacity = 512M
+
+# ==========================================
+# [mysqldump] - การตั้งค่าสำหรับ mysqldump
+# ==========================================
+[mysqldump]
+# ทำการ dump อย่างรวดเร็ว (ไม่ lock table นาน)
+quick
+
+# ใส่เครื่องหมาย quote รอบชื่อตารางและคอลัมน์
+quote-names
+
+# ขนาดสูงสุดของแพ็คเกจสำหรับ mysqldump (256MB)
+max_allowed_packet = 256M
+
+# กำหนด character set สำหรับ mysqldump เป็น utf8mb4
+default-character-set = utf8mb4
